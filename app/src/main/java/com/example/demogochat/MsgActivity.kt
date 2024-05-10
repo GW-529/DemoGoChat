@@ -27,7 +27,7 @@ class MsgActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_msg)
-        // 创建数据库(chat)
+        // 创建数据库(msg)
         dbHelper = ChatDBHelper(this,ChatDBHelper.DB_NAME,ChatDBHelper.DB_VERSION)
         val db = dbHelper.writableDatabase
 
@@ -82,7 +82,7 @@ class MsgActivity : AppCompatActivity() {
                 put("type",Msg.TYPE_SENT)
                 put("content",inputText.text.toString())
             }
-            db.insert("Msg",null,chatContent)
+            db.insert("chat",null,chatContent)
 
             val msg = Msg(inputText.text.toString(), Msg.TYPE_SENT, id)
             msgList.add(msg)
@@ -99,7 +99,7 @@ class MsgActivity : AppCompatActivity() {
     private fun loadMsgList() {
         val db = dbHelper.writableDatabase
         val friend_id = intent.getIntExtra("id",0)
-        val cursor = db.rawQuery("select * from Msg where friend_id=?", arrayOf("$friend_id"))
+        val cursor = db.rawQuery("select * from chat where friend_id=?", arrayOf("$friend_id"))
         if (cursor.moveToFirst()){
             do {
                 val type = cursor.getInt(cursor.getColumnIndex("type"))

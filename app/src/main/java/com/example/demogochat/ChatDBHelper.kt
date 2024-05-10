@@ -12,16 +12,11 @@ class ChatDBHelper(val context: Context, dbName:String, version:Int):
             "face_id integer )"
 
 
-    private val createMsg = "create table Msg(" +
+    private val createMsg = "create table chat(" +
             "id integer primary key autoincrement," +
             "friend_id integer," +
             "type integer," +
             "content text)"
-
-
-
-
-
 
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -33,7 +28,7 @@ class ChatDBHelper(val context: Context, dbName:String, version:Int):
         TODO("Not yet implemented")
     }
     companion object{
-        const val DB_NAME = "Chat.db"
+        const val DB_NAME = "Msg.db"
         const val DB_VERSION = 1
     }
 }

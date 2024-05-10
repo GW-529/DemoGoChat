@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Button
 import androidx.core.content.contentValuesOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,8 +24,13 @@ class MainActivity : AppCompatActivity() {
         // 创建数据库(chat)
         dbHelper = ChatDBHelper(this,ChatDBHelper.DB_NAME,ChatDBHelper.DB_VERSION)
         val db = dbHelper.writableDatabase
-        // 添加朋友
-        // createFriends()
+        // 点击添加朋友
+
+        val addFriendButton:Button = findViewById(R.id.add_friend_button)
+        addFriendButton.setOnClickListener {
+            createFriends()
+        }
+
         // 查询并显示朋友
         loadFriends()
 
