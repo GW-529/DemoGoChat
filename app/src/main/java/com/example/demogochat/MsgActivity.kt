@@ -1,5 +1,7 @@
 package com.example.demogochat
 
+import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -21,10 +23,16 @@ class MsgActivity : AppCompatActivity() {
 
     //所有消息的存储列表
     val msgList = ArrayList<Msg>()
-
+    lateinit var dbHelper:ChatDBHelper
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_msg)
+        // 创建数据库(chat)
+        dbHelper = ChatDBHelper(this,ChatDBHelper.DB_NAME,ChatDBHelper.DB_VERSION)
+        val db = dbHelper.writableDatabase
+
+        loadMsgList()
+
         val friendInfo: TextView = findViewById(R.id.msg_friend_info)
         // 接受数据解包
         val id = intent.getIntExtra("id",0)
@@ -38,7 +46,7 @@ class MsgActivity : AppCompatActivity() {
         //2.视图布局
         val layoutManager = LinearLayoutManager(this)
         //3.数据的转换
-        initMsgList()
+        //initMsgList()
         val adapter = MsgAdapter(msgList,this)
         //4.给RecyclerView赋予属性
         recyclerView.layoutManager = layoutManager
@@ -67,6 +75,15 @@ class MsgActivity : AppCompatActivity() {
             //保存xml文件
             loadXml()
             //生成一条Msg消息
+            //聊天内容存储至数据库
+            val db = dbHelper.writableDatabase
+            val chatContent = ContentValues().apply {
+                put("friend_id",id)
+                put("type",Msg.TYPE_SENT)
+                put("content",inputText.text.toString())
+            }
+            db.insert("Msg",null,chatContent)
+
             val msg = Msg(inputText.text.toString(), Msg.TYPE_SENT, id)
             msgList.add(msg)
             //通知adapter更新列表
@@ -75,6 +92,20 @@ class MsgActivity : AppCompatActivity() {
             recyclerView.scrollToPosition(msgList.size - 1)
             //清空输入框
             inputText.setText("")
+        }
+    }
+
+    @SuppressLint("Range")
+    private fun loadMsgList() {
+        val db = dbHelper.writableDatabase
+        val friend_id = intent.getIntExtra("id",0)
+        val cursor = db.rawQuery("select * from Msg where friend_id=?", arrayOf("$friend_id"))
+        if (cursor.moveToFirst()){
+            do {
+                val type = cursor.getInt(cursor.getColumnIndex("type"))
+                val content = cursor.getString(cursor.getColumnIndex("content"))
+                msgList.add(Msg(content,type,friend_id))
+            }while (cursor.moveToNext())
         }
     }
 

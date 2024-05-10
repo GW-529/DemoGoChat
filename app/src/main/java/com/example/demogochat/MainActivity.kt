@@ -1,21 +1,39 @@
 package com.example.demogochat
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.core.content.contentValuesOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
     // 朋友列表数据，创建一个列表
     val friendList = ArrayList<Friend>()
-    //savedInstanceState是onCreate的父类，是一个Bundle对象
-    override fun onCreate(savedInstanceState: Bundle?) {
+
+
+    // 实例化databasehelper
+    lateinit var dbHelper:ChatDBHelper
+
+    override fun onCreate(savedInstanceState: Bundle?) { //savedInstanceState是onCreate的父类，是一个Bundle对象
         super.onCreate(savedInstanceState) //调用父类的 onCreate() 方法，确保执行了父类的初始化逻辑。
         setContentView(R.layout.activity_main) //设置 Activity 的布局文件为 activity_main.xml。
+        // 创建数据库(chat)
+        dbHelper = ChatDBHelper(this,ChatDBHelper.DB_NAME,ChatDBHelper.DB_VERSION)
+        val db = dbHelper.writableDatabase
+        // 添加朋友
+        // createFriends()
+        // 查询并显示朋友
+        loadFriends()
+
+
+
+
+/*
         //创建数据库(Book)
-        val dbHelper = BookDatabaseHelper(this,"Book db",1)
+        val dbHelper = BookDatabaseHelper(this,"Book.db",1)
         val db = dbHelper.writableDatabase
         // 插入数据
         // #1
@@ -28,10 +46,10 @@ class MainActivity : AppCompatActivity() {
             put("price",29.99)
         }
         db.insert("Book",null,values)
+*/
 
 
-
-        iniFriendList() //自定义的函数调用，用于初始化好友列表的数据。
+        //iniFriendList() //自定义的函数调用，用于初始化好友列表的数据。
         // 使用recyclerview的方法
         // 在布局文件中找到一个名为 friend_list 的 RecyclerView 控件，并将其实例化为一个名为 friendListView 的变量。
         val friendListView: RecyclerView = findViewById(R.id.friend_list)
@@ -48,6 +66,38 @@ class MainActivity : AppCompatActivity() {
         friendListView.adapter = adapter
 
     }
+
+    @SuppressLint("Range")
+    private fun loadFriends() {
+        val db = dbHelper.writableDatabase
+        // select * from Friend
+        //val cursor = db.query(("Friend",null,null,null,null,null,null))
+        val cursor = db.rawQuery("select * from Friend",null)
+        // 整理朋友信息
+        if (cursor.moveToFirst()){
+            do {
+                val id = cursor.getInt(cursor.getColumnIndex("id"))
+                val name = cursor.getString(cursor.getColumnIndex("name"))
+                val face_id = cursor.getInt(cursor.getColumnIndex("face_id"))
+                friendList.add(Friend(name,face_id,id))
+            }while (cursor.moveToNext())
+        }
+    }
+
+    private fun createFriends() {
+        val db = dbHelper.writableDatabase
+        val friend1 = ContentValues().apply {
+            put("name","张三")
+            put("face_id",R.drawable.apple_pic)
+        }
+        db.insert("Friend",null,friend1)
+        val friend2 = ContentValues().apply {
+            put("name","李四")
+            put("face_id",R.drawable.banana_pic)
+        }
+        db.insert("Friend",null,friend2)
+    }
+
     // 私有函数 iniFriendList()，用于初始化好友列表的数据。
     private fun iniFriendList() {
         // 将一个名为 "张三" 的好友对象添加到 friendList 列表中。这个好友对象包括名字、一个代表苹果图片的资源 ID 和一个唯一的 ID。
